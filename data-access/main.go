@@ -59,6 +59,7 @@ func main() {
 	}
 	fmt.Printf("Album found: %v\n", alb)
 
+	// 
 	albID, err := addAlbum(Album{
 		Title:  "The Modern Sound of Betty Carter",
 		Artist: "Betty Carter",
@@ -118,6 +119,8 @@ func addAlbum(alb Album) (int64, error) {
     if err != nil {
         return 0, fmt.Errorf("addAlbum: %v", err)
     }
+	// Retrieve the ID of the inserted database row using Result.LastInsertId.
+	// This ID is the primary key of the album table.
     id, err := result.LastInsertId()
     if err != nil {
         return 0, fmt.Errorf("addAlbum: %v", err)
