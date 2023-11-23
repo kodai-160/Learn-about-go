@@ -20,6 +20,9 @@ type Album struct {
 
 func main() {
     // Capture connection properties.
+	// os,Getenv() reads the environment variable named DBPASS and DBUSER
+	// Addr is the IP address and port of the MySQL server. 3306 is the default port.
+	// AllowNativePasswords is hashed password support.
     cfg := mysql.Config{
         User:   os.Getenv("DBUSER"),
         Passwd: os.Getenv("DBPASS"),
@@ -28,13 +31,15 @@ func main() {
         DBName: "recordings",
 		AllowNativePasswords: true,
     }
-    // Get a database handle.
-    var err error
+    // A part of the process of connecting to a database is to validate the connection properties.
+	// cfg.FormatDSN() formats the connection properties into a string that can be used to connect to the database.
+	var err error
     db, err = sql.Open("mysql", cfg.FormatDSN())
     if err != nil {
         log.Fatal(err)
     }
 
+	// Ping verifies a connection to the database is still alive, establishing a connection if necessary.
     pingErr := db.Ping()
     if pingErr != nil {
         log.Fatal(pingErr)
@@ -69,7 +74,8 @@ func main() {
 func albumsByArtist(name string) ([]Album, error) {
 	// An albums slice to hold data from returned rows.
 	var albums []Album
-
+	// db.Query() sends the query to the database, returning a *sql.Rows.
+	// By separating the SQL statement from oarameters to the query, you avoid SQL injection attacks.
 	rows, err := db.Query("SELECT * FROM album WHERE artist = ?", name)
 	if err != nil {
 		return nil, fmt.Errorf("albumsByArtist %q: %v", name, err)
@@ -106,6 +112,7 @@ func albumByID(id int64) (Album, error) {
 
 // addAlbum adds the specified album to the database,
 // returning the album ID of the new entry
+// To execute SQL statements that don't return data, use db.Exec().
 func addAlbum(alb Album) (int64, error) {
     result, err := db.Exec("INSERT INTO album (title, artist, price) VALUES (?, ?, ?)", alb.Title, alb.Artist, alb.Price)
     if err != nil {
